@@ -1,0 +1,6 @@
+{Second, main calls |blankCanvas|, with two arguments:
+\begin{itemize}
+\item The port (3000) to publish the application on; and
+\item and what to do with canvas
+\end{itemize}
+}
