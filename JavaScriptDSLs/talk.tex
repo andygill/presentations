@@ -10,10 +10,10 @@
 \SaveVerb{bind}+>>=+
 \SaveVerb{from}+<-+
 
-\title[EECS 700]{EECS 700\\Functional Programming}
-\author[Andy Gill]{Dr. Andy Gill}
+\title[JavaScript DSLs]{Sunroof and a Blank Canvas:\\A tail of two DSLs}
+\author[Andy Gill]{Andy Gill\\~\\with Jan Bracker (Sunroof) and Andrew Farmer (Blank Canvas)}
 \institute{University of Kansas}
-\date{October 19, 2012}
+\date{July 8, 2014}
 
 \begin{document}
 
@@ -23,7 +23,7 @@
 \frametitle{Blank Canvas}
 \Large
 \begin{itemize}
-\item New library for simple graphics
+\item library for simple graphics
 \item Uses HTML5's \verb|<canvas>| capabilities as viewport
 \item Javascript examples can be transliterated into Haskell    
 \item Fast enough for basic animations
@@ -62,29 +62,30 @@ stroke()
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{This class: Design and Implementation of blank-canvas}
-\Large
+\frametitle{Sunroof}
+\large
 \begin{itemize}
-\item How to structure small examples
-\item How to transliterate from Javascript tutorials
-\item Animation and Interaction
-\item Design and Implementation of the the Canvas DSL
-\item Extended Example: tic-tac-toe
-\frameskip{}
-\item blank-canvas is available on hackage (real soon now)
+\item Deep embedding of the JavaScript syntax
+\item Can write JavaScript in Haskell, access JavaScript APIs
+\item CPS translation to supporting concurrency, when needed
+\item The monadic bind translates into an assignment in JavaScript
 \end{itemize}
-\begin{execblock}[0.65]
+\begin{codeblock}[0.75]
+\footnotesize
 \begin{verbatim}
- % cabal install blank-canvas
+currentTime :: JS t (JSNumber, JSNumber, JSNumber)
+currentTime = do
+  date <- newDate ()
+  h <- date # getHours
+  m <- date # getMinutes
+  s <- date # getSeconds
+  return (h, m, s)
 \end{verbatim}
-\end{execblock}
-\begin{itemize}
-\item Also on github: {\tt\small https://github.com/andygill/blank-canvas}
-\end{itemize}
+\end{codeblock}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{First Example: red line}
+\frametitle{First Sunroof Example: red line}
 \Large
 
 
@@ -113,7 +114,7 @@ main = blankCanvas 3000 \$ \\ context -> do\uncover<3->{
 
 \frameskip{}
 \only<1>%
-{First, include the {\tt Graphics.Blank} module.}
+{First, include the {\tt Graphics.Blank} module.\vspace{0.58in}}
 \only<2>%
 {Second, main calls {\tt blankCanvas}, with two arguments:%
 \begin{itemize}
@@ -122,9 +123,9 @@ main = blankCanvas 3000 \$ \\ context -> do\uncover<3->{
 \end{itemize}
 }
 \only<3>%
-{Third, we {\tt send} to the canvas a list of monadic commands}
+{Third, we {\tt send} to the canvas a list of monadic commands.\vspace{0.38in}}
 \only<4>%
-{Finally, here are the commands to draw a {\color{red}red} line}
+{Finally, here are the commands to draw a {\color{red}red} line.\vspace{0.58in}}
 
 \end{frame}
 
@@ -132,18 +133,20 @@ main = blankCanvas 3000 \$ \\ context -> do\uncover<3->{
 \frametitle{Architecture of {\tt blank-canvas}}
 \Large
 
-
 \begin{tabular}{ccc}
-Haskell & &\\
-\begin{minipage}[b]{.3\textwidth}
+\begin{minipage}[b]{.4\textwidth}
 \begin{codeblock}[0.85]
 \small
-Your application:
+Your application:\\
 \footnotesize ``please draw red line''
 \end{codeblock}
 \begin{codeblock*}[0.85]{{\tt blank-canvas}}
 \tiny
 Canvas commands for drawing pictures.
+\end{codeblock*}
+\begin{codeblock*}[0.85]{{\tt kansas-comet}}
+\tiny
+Comet pattern for pushing to client.
 \end{codeblock*}
 \begin{codeblock*}[0.85]{{\tt scotty}}
 \tiny 
@@ -169,7 +172,7 @@ Software Stack & & Web Browser\\
 \begin{semiverbatim}
 -- Create a web server. Run the given function with
 -- a fresh Context each time our webpage is called.
-blankCanvas :: Int -> (Context -> IO ()) -> IO ()
+blankCanvas :: Options -> (Context -> IO ()) -> IO ()
 
 -- Sends a set of Canvas commands to the canvas. 
 -- Attempts to common up as many commands as possible. 
@@ -250,7 +253,7 @@ islands of {\tt Canvas} drawing rendered via {\tt send}.
     </script>
   </head>
   <body>
-    <canvas id="myCanvas" width="578" height="200"></canvas>
+    <canvas id="myCanvas" width="578" height="200"\ \!\!\!></canvas>
   </body>
 </html>
 \end{semiverbatim}
@@ -307,35 +310,8 @@ send :: Context -> Canvas a -> IO a
 \begin{frame}[fragile]
 \frametitle{Supported Canvas Commands}
 
-\begin{codeblock}[0.6]
-\tiny
-\begin{verbatim}
-arc :: (Float,Float,Float,Float,Float,Bool) -> Canvas ()
-beginPath :: () -> Canvas ()
-clearRect :: (Float,Float,Float,Float) -> Canvas ()
-closePath :: () -> Canvas ()
-fill :: () -> Canvas ()
-fillStyle :: String -> Canvas ()
-fillText :: (String,Float,Float) -> Canvas ()
-font :: String -> Canvas ()
-lineCap :: String -> Canvas ()
-lineTo :: (Float,Float) -> Canvas ()
-lineWidth :: Float -> Canvas ()
-miterLimit :: Float -> Canvas ()
-moveTo :: (Float,Float) -> Canvas ()
-restore :: () -> Canvas ()
-rotate :: Float -> Canvas ()
-scale :: (Float,Float) -> Canvas ()
-save :: () -> Canvas ()
-stroke :: () -> Canvas ()
-strokeText :: (String,Float,Float) -> Canvas ()
-strokeStyle :: String -> Canvas ()
-textAlign :: String -> Canvas ()
-textBaseline :: String -> Canvas ()
-transform :: (Float,Float,Float,Float,Float,Float) -> Canvas ()
-translate :: (Float,Float) -> Canvas ()        
-\end{verbatim}        
-\end{codeblock}
+\includegraphics[width=.95\textwidth]{HTML5_Canvas_Cheat_Sheet.png}
+
 \end{frame}
 
 \begin{frame}[fragile]
@@ -371,22 +347,21 @@ loop context n = do
 \frametitle{Rotating Square}
 
 \begin{columns}
-\begin{column}{0.40\textwidth}
+\begin{column}{0.3\textwidth}
 \includegraphics[trim = 25mm 30mm 25mm 25mm, clip, width=90pt]{1.png}\\
 \includegraphics[trim = 25mm 30mm 25mm 25mm, clip, width=90pt]{3.png}\\
 \includegraphics[trim = 25mm 30mm 25mm 25mm, clip, width=90pt]{5.png}
 \end{column}
-\begin{column}{0.60\textwidth}
-\begin{codeblock}[0.95]
-\footnotesize
+\begin{column}{0.7\textwidth}
+\begin{codeblock}[0.8]
+\tiny
 \begin{semiverbatim}
 loop context n = do
     send context \$ do
-        (width,height) <- size
-        clearRect (0,0,width,height)
+        clearRect (0,0,width context,height context)
         beginPath()
         save()
-        translate (width / 2,height / 2)
+        translate (width context / 2,height context / 2)
         rotate (pi * n)
         beginPath()
         moveTo(-100,-100)
@@ -398,6 +373,7 @@ loop context n = do
         strokeStyle "green"
         stroke()
         restore()
+    threadDelay (20 * 1000) 
     loop context (n + 0.01)
 \end{semiverbatim}
 \end{codeblock}
@@ -416,28 +392,27 @@ loop context n = do
 \begin{columns}[t]
 \begin{column}{0.5\textwidth}
 
-\begin{codeblock}[0.8]
+\begin{codeblock}[0.9]
 \begin{semiverbatim}
-(width,height) <- size
-clearRect (0,0,width,height)
+clearRect (0,0,width context,height context)
 beginPath()
 \end{semiverbatim}
 \end{codeblock}
 
-\begin{codeblock}[0.8]
+\begin{codeblock}[0.9]
 \begin{semiverbatim}
 save()
 \end{semiverbatim}
 \end{codeblock}
 
-\begin{codeblock}[0.8]
+\begin{codeblock}[0.9]
 \begin{semiverbatim}
-translate (width / 2,height / 2)
+translate (width context / 2,height context / 2)
 rotate (pi * n)
 \end{semiverbatim}
 \end{codeblock}
 
-\begin{codeblock}[0.8]
+\begin{codeblock}[0.9]
 \begin{semiverbatim}
 beginPath()
 moveTo(-100,-100)
@@ -451,7 +426,7 @@ stroke()
 \end{semiverbatim}
 \end{codeblock}
 
-\begin{codeblock}[0.8]
+\begin{codeblock}[0.9]
 \begin{semiverbatim}
 restore()
 \end{semiverbatim}
@@ -465,7 +440,7 @@ restore()
 Clear the screen.\\
 ({\tt beginPath()} is needed for line drawings.)
 
-\vskip 25pt
+\vskip 20pt
 \noindent
 Save the state of the canvas. This is good practice.
 
@@ -474,7 +449,7 @@ Save the state of the canvas. This is good practice.
 \noindent
 These translations are applied to all coordinates.
 
-\vskip 25pt
+\vskip 20pt
 \noindent
 At last we can draw the square!  Notice how we draw
 a 200x200 square, centered on (0,0), 
@@ -493,115 +468,34 @@ This undoes the translations.
 \begin{frame}[fragile]
 \frametitle{Interaction}
 
+So far, everything has about been {\em sending\/} commands JavaScript.\\
+~\\
+
+There are two types of browser${}\rightarrow{}$application interaction.\\
+~\\
+
+{\bf The HTML canvas, if asked, can listen for events.}
 \begin{itemize}
-\item The browser can send your Haskell program {\em events\/}.
-\item Example of events are \verb|MouseDown|, \verb|MouseMove|, and \verb|KeyPress|.
-\item {\bf You can wait for specific events using the {\tt Canvas} monad.}
+\item Examples are \verb|mousedown| and \verb|mousemove|.
+\item We need to send the events to the Haskell program.
+\item We handle events using a STM Queue.
 \end{itemize}
-
-\begin{codeblock*}[0.9]{Handling Events}
-\begin{verbatim}
-data Event = Event
-           { jsCode  :: Int  -- event specific code
-           , jsMouse :: Maybe (Int,Int)
-           }
-
-readEvent    :: EventName -> Canvas Event
-tryReadEvent :: EventName -> Canvas (Maybe Event)
-flushEvents  :: EventName -> Canvas ()
-\end{verbatim}
-\end{codeblock*}
-
-\frameskip{}
-\frameskip{}
-Using {\tt Canvas\/}, you are always examining one type of event at a time.
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{[Advanced Aside] Interaction with multiple {\tt EventName}s}
-
+~\\
+{\bf We can also {\em query\/} the JavaScript state inside \verb|Canvas|.}
 \begin{itemize}
-\item You can also directly handle events yourself.
+\item For example, is a point inside a path?
 \end{itemize}
-\begin{codeblock}
-\begin{verbatim}
-events :: Context -> EventName -> IO EventQueue
-\end{verbatim}
-\end{codeblock}
-
-\begin{itemize}
-\item Event queues use Software Transactional Memory, allowing for
-multiple types of events to be waited for at the same time.
-\end{itemize}
-\begin{codeblock}
-\begin{verbatim}
-type EventQueue = TChan Event
-\end{verbatim}
-\end{codeblock}
-
-\frameskip{}
-\begin{itemize}
-\item The {\tt Canvas} interactions are built on top of this API.
-\end{itemize}
-
-
-
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Squares placed using the mouse}
-
 \begin{codeblock}[0.8]
-\tiny
 \begin{semiverbatim}
-main = blankCanvas 3000 \$ \\ context -> do
-          let loop (x,y) (color:colors) = do
-                send context \$ do
-                        save()
-                        translate (x,y)
-                        beginPath()
-                        moveTo(-100,-100)
-                        lineTo(-100,100)
-                        lineTo(100,100)
-                        lineTo(100,-100)
-                        closePath()
-                        lineWidth 10
-                        strokeStyle color
-                        stroke()
-                        restore()
-\alert{
-                event <- send context \$ readEvent MouseDown
-                case jsMouse event of
-                        Nothing -> loop (x,y) colors
-                        Just (x',y') -> loop (fromIntegral x',fromIntegral y') colors
-}
-          (width,height) <- send context size
-
-          loop (width / 2,height / 2)
-               (cycle [ "#749871", "#1887f2", "#808080", "f01234"])
+isPointInPath :: (Float, Float) -> Canvas Bool
 \end{semiverbatim}
 \end{codeblock}
+~\\
+\begin{itemize}
+\item Question: How do we get the boolean back to Haskell?
+\end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{blank-canvas DSL}
-
-Main data structures in {\tt blank-canvas} are: 
-\begin{itemize}
-\item {\tt Canvas}      -- Monad, inside IO via {\tt send}.
-\item {\tt Context}     -- handle for a specific browser's viewport.
-\item {\tt Event}       -- Something happens.
-\item {\tt EventName}   -- Names for possible interactions from user.
-\item {\tt EventQueue}  -- Place to store events until they are read.
-\end{itemize}
-\
-\frameskip{}
-Interesting part is the {\tt Canvas} monad. 
-\begin{itemize}
-\item Is {\tt Canvas} shallow or deep?
-\end{itemize}
-
-\end{frame}
 
 \begin{frame}[fragile]
 \frametitle{The Canvas Monad}
@@ -610,27 +504,33 @@ Interesting part is the {\tt Canvas} monad.
 specifically we try bundle together as much as possible when
 sending drawing commands to the browser.
 
-\begin{codeblock}
+\begin{codeblock}[0.9]
 \tiny
 \begin{verbatim}
+
 data Canvas :: * -> * where
-        Command :: Command                           -> Canvas ()
-        Bind    :: Canvas a -> (a -> Canvas b)       -> Canvas b
-        Return  :: a                                 -> Canvas a
-        Get     :: EventName -> (EventQueue -> IO a) -> Canvas a
-        Size    ::                                      Canvas (Float,Float)
+        Method  :: Method                              -> Canvas ()     -- <context>.<method>
+        Command :: Command                             -> Canvas ()     -- <command>
+        Query   :: Query a                             -> Canvas a
+        ...
+        Bind    :: Canvas a -> (a -> Canvas b)         -> Canvas b
+        Return  :: a                                   -> Canvas a
 
 instance Monad Canvas where
         return = Return
         (>>=) = Bind
 
-data Command
+data Method
         = Arc (Float,Float,Float,Float,Float,Bool)
+        | ArcTo (Float,Float,Float,Float,Float)
         | BeginPath
-        | ClearRect (Float,Float,Float,Float)
-        | ClosePath
-        | Fill
-        ....
+        | BezierCurveTo (Float,Float,Float,Float,Float,Float)
+        | forall image . Image image => DrawImage (image,[Float])
+        ...
+
+data Query :: * -> * where
+        IsPointInPath        :: (Float,Float)             -> Query Bool
+        ...
 \end{verbatim}
 
 \end{codeblock}
@@ -638,120 +538,234 @@ data Command
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{The Canvas Commands}
+\frametitle{GADTs to the rescue!}
 
-There is a {\tt Canvas} command for each Javascript function.
+We interpret the \verb|Canvas| monad, collecting JavaScript, punctuating at queries.
 
-\begin{codeblock}[0.6]
+\begin{codeblock}[1]
+\tiny
+\begin{semiverbatim}
+send :: DeviceContext -> Canvas a -> IO a
+send cxt commands = send' (deviceCanvasContext cxt) commands id 
+ where
+  send' :: CanvasContext -> Canvas a -> (String -> String) -> IO a
+  send' c (\alert{Bind} (\alert{Return} a) k)    cmds = send' c (k a) cmds
+  send' c (\alert{Bind} (\alert{Bind} m k1) k2)  cmds = send' c (Bind m (\ r -> Bind (k1 r) k2)) cmds
+  send' c (Bind (Method cmd) k) cmds = send' c (k ()) (cmds . ((showJS c ++ ".") ++) . shows cmd . (";" ++))
+  send' c (Bind (Command cmd) k) cmds = send' c (k ()) (cmds . shows cmd . (";" ++))
+  send' c (Bind (\alert{Query} query) k) cmds = do
+      uq <- atomically \$ getUniq
+      -- The query function returns a function takes the unique port number of the reply.
+      sendToCanvas cxt (cmds . ((show query ++ "(" ++ show uq ++ "," ++ showJS c ++ ");") ++))
+      v <- KC.getReply (theComet cxt) uq
+      case parse (parseQueryResult query) v of
+        Error msg -> fail msg
+        Success a -> do
+                send' c (k a) id
+  ...
+  send' _ (Return a)           cmds = do
+      sendToCanvas cxt cmds
+      return a
+  send' c cmd                  cmds = send' c (Bind cmd Return) cmds
+
+\alert{parseQueryResult} :: Query a -> Value -> Parser a
+...
+\end{semiverbatim}
+
+\end{codeblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Sunroof binds do not return to Haskell}
+
+\begin{itemize}
+\item Can we avoid returning to Haskell? Yes. 
+\item Sunroof is based on this idea.
+\end{itemize}
+
+~\\
+~\\
+JavaScript:
+
+\begin{codeblock}[0.4]
 \tiny
 \begin{verbatim}
-...
-fill :: () -> Canvas ()
-fill () = Command Fill
-
-fillStyle :: String -> Canvas ()
-fillStyle = Command . FillStyle
-
-fillText :: (String,Float,Float) -> Canvas ()
-fillText = Command . FillText
-
-font :: String -> Canvas ()
-font = Command . Font
-...
+var name = prompt("Your name?");
+alert("Your name: " + name);
 \end{verbatim}
 \end{codeblock}
 
-\frameskip
-These are auto-generated from a table.
+~\\
+Sunroof:
 
-\frameskip
-Some Javascript commands use assignment; we use function arguments.
+\begin{codeblock}[0.4]
+\tiny
+\begin{verbatim}
+do name <- prompt "Your name?"
+   alert ("Your name: " <> name)
+
+prompt :: JSString -> JS JSString
+alert  :: JSString -> JS ()
+\end{verbatim}
+\end{codeblock}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Key idea - normalize the constraints}
 
 \begin{columns}
-\begin{column}{0.50\textwidth}
-\begin{codeblock*}[0.80]{Javascript}
-\footnotesize
-\begin{semiverbatim}
-context.font \alert{=} "30pt Calibri"
-\end{semiverbatim}
-\end{codeblock*}
-\end{column}
+\begin{column}{0.45\textwidth}
 
-\begin{column}{0.50\textwidth}
-\begin{codeblock*}[0.52]{Haskell}
-\footnotesize
+\begin{codeblock}[0.8]
+\tiny
 \begin{verbatim}
-font "30pt Calibri"
+(>>=) :: JS a -> (a -> JS b) -> JS b
 \end{verbatim}
-\end{codeblock*}
+\end{codeblock}
+
+
+\begin{itemize}
+\item We need to know that 'a' is a JavaScript type.
+\item {\bf How do we constrain it?} Normalize and reify the monad!
+\end{itemize}
+
 \end{column}
 
+\begin{column}{0.55\textwidth}
+
+\includegraphics[width=150pt]{MonadNormalForm.pdf}
+
+\end{column}
+\end{columns}
+
+~\\
+~\\
+See: The Constrained-Monad Problem, ICFP'13, Sculthorpe, et. al.\ for details.
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Threading Models}
+
+Actually the `JS` data type has another type parameter `t`:
+
+\begin{codeblock}[0.15]
+\small
+\begin{verbatim}
+JS t a
+\end{verbatim}
+\end{codeblock}
+
+\begin{itemize}
+\item `t` determines the threading model used
+\item `t` can either be \verb`A` or \verb`B`
+\end{itemize}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+Model A: Atomic
+\begin{itemize}
+\item The JavaScript threading model
+\item Callback centric
+\item One thread with event loop
+\item Executed code in loop is uninterruptible
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+Model B: Blocking
+
+\begin{itemize}
+\item Adds cooperative concurrency to Sunroof
+\item Offers abstractions known from Haskell: 
+\end{itemize}
+
+\begin{codeblock}[0.6]
+\begin{verbatim}
+forkJS :: JS B () -> JS t ()
+yield :: JS B ()
+\end{verbatim}
+\end{codeblock}
+
+~\\
+Also \verb|JSMVar| and \verb|JSChan|.
+
+\begin{itemize}
+\item Implemented through translation of continuations to JavaScript
+\end{itemize}
+
+\end{column}
 \end{columns}
 
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{The Canvas Commands}
+\begin{frame}[fragile]{Functions}
 
-There is a {\tt Canvas} command for each Javascript function.
-
-\begin{codeblock}[1]
-\tiny
+\begin{codeblock}[0.8]
 \begin{verbatim}
-instance Show Command where
-  ...
-  show Fill = "c.fill();"
-  show (FillStyle (a1)) = "c.fillStyle = (" ++ show a1 ++ ");"
-  show (FillText (a1,a2,a3)) = "c.fillText(" ++ show a1 ++ "," ++ showJ a2 ++ "," ++ showJ a3 ++ ");"
-  show (Font (a1)) = "c.font = (" ++ show a1 ++ ");"
-  ...
+function   :: (...) => (a -> JS A r) 
+                    -> JS t (JSFunction a r)
+apply,($$) :: (...) => JSFunction a r 
+                    -> a -> JS t r
 \end{verbatim}
 \end{codeblock}
 
-\frameskip
-{\tt send} works by calling {\tt show} on all the commands, and sending them to the browser
-in a single combined javascript script.
+
+\begin{codeblock}[0.8]
+\begin{verbatim}
+square :: JS t (JSFunction JSNumber JSNumber)
+square = function $ \x -> return (x * x)
+\end{verbatim}
+\end{codeblock}
+
+\begin{codeblock}[0.8]
+\begin{verbatim}
+jsCode = do
+  sqr <- square   -- Create / Bind
+  n <- sqr $$ 2  -- Use
+  ...
+\end{verbatim}
+\end{codeblock}
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{The Canvas Webserver}
+\begin{frame}[fragile]{Continuations}
 
-We use the {\tt scotty} web service provider. This make the handling 
-of web page issues straightforward.
+\begin{itemize}
+\item Continuations needed for second threading model
+\item \verb`JS`-monad is a continuation monad
+\item We have access to the underlying continuations in JavaScript
+\end{itemize}
 
-\begin{codeblock}[0.6]
-\tiny
-\begin{semiverbatim}
-blankCanvas :: Int -> (Context -> IO ()) -> IO ()
-blankCanvas port actions = do
-   ...
-   app <- scottyApp $ do
-        ...
 
-        get "/" $ file $ dataDir ++ "/static/index.html"
-        
-        post "/start" $ do
-            ... \alert{create a new context} ...
+\begin{codeblock}[0.9]
+\begin{verbatim}
+continuation   :: (...) => (a -> JS B ()) 
+                        -> JS t (JSContinuation a)
+goto           :: (...) => JSContinuation a
+                        -> a -> JS t b
+\end{verbatim}
+\end{codeblock}
 
-        post "/event/:num" $ do
-             ... \alert{add an event onto the correct queue} ...
+We even have our friend, call/cc.
 
-        get "/canvas/:num" $ do
-            ... \alert{wait for the user to send commands} ...
-            ... (in textual / javascript form) ...
-
-   run port app
-\end{semiverbatim}
+\begin{codeblock}[0.9]
+\begin{verbatim}
+callcc :: (...) => (JSContinuation a -> JS B a)
+                -> JS B a
+\end{verbatim}
 \end{codeblock}
 
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Tic-Tac-Toe}
 
-\centering
-\includegraphics[width=290pt]{xox.png}
-
+\begin{frame}[fragile]{So how well does it all work?}
+        
+\begin{itemize}
+\item The types are quite complex
+\item Wrote a number of applications (calculator; grader program)
+\item Control flow is the {\bf pain point}
+\end{itemize}                
 
 \end{frame}
 
