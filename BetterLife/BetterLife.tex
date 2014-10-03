@@ -1,0 +1,972 @@
+\documentclass[smaller]{beamer}
+
+\usepackage{eecs}
+
+\usepackage{etex}
+\usepackage[all]{xy}
+
+
+%% ODER: format ==         = "\mathrel{==}"
+%% ODER: format /=         = "\neq "
+%
+%
+\makeatletter
+\@ifundefined{lhs2tex.lhs2tex.sty.read}%
+  {\@namedef{lhs2tex.lhs2tex.sty.read}{}%
+   \newcommand\SkipToFmtEnd{}%
+   \newcommand\EndFmtInput{}%
+   \long\def\SkipToFmtEnd#1\EndFmtInput{}%
+  }\SkipToFmtEnd
+
+\newcommand\ReadOnlyOnce[1]{\@ifundefined{#1}{\@namedef{#1}{}}\SkipToFmtEnd}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\DeclareFontFamily{OT1}{cmtex}{}
+\DeclareFontShape{OT1}{cmtex}{m}{n}
+  {<5><6><7><8>cmtex8
+   <9>cmtex9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmtex10}{}
+\DeclareFontShape{OT1}{cmtex}{m}{it}
+  {<-> ssub * cmtt/m/it}{}
+\newcommand{\texfamily}{\fontfamily{cmtex}\selectfont}
+\DeclareFontShape{OT1}{cmtt}{bx}{n}
+  {<5><6><7><8>cmtt8
+   <9>cmbtt9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmbtt10}{}
+\DeclareFontShape{OT1}{cmtex}{bx}{n}
+  {<-> ssub * cmtt/bx/n}{}
+\newcommand{\tex}[1]{\text{\texfamily#1}}	% NEU
+
+\newcommand{\Sp}{\hskip.33334em\relax}
+
+
+\newcommand{\Conid}[1]{\mathit{#1}}
+\newcommand{\Varid}[1]{\mathit{#1}}
+\newcommand{\anonymous}{\kern0.06em \vbox{\hrule\@width.5em}}
+\newcommand{\plus}{\mathbin{+\!\!\!+}}
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}% suggested by Neil Mitchell
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\usepackage{polytable}
+
+%mathindent has to be defined
+\@ifundefined{mathindent}%
+  {\newdimen\mathindent\mathindent\leftmargini}%
+  {}%
+
+\def\resethooks{%
+  \global\let\SaveRestoreHook\empty
+  \global\let\ColumnHook\empty}
+\newcommand*{\savecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\savecolumns[#1]}}
+\newcommand*{\restorecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\restorecolumns[#1]}}
+\newcommand*{\aligncolumn}[2]%
+  {\g@addto@macro\ColumnHook{\column{#1}{#2}}}
+
+\resethooks
+
+\newcommand{\onelinecommentchars}{\quad-{}- }
+\newcommand{\commentbeginchars}{\enskip\{-}
+\newcommand{\commentendchars}{-\}\enskip}
+
+\newcommand{\visiblecomments}{%
+  \let\onelinecomment=\onelinecommentchars
+  \let\commentbegin=\commentbeginchars
+  \let\commentend=\commentendchars}
+
+\newcommand{\invisiblecomments}{%
+  \let\onelinecomment=\empty
+  \let\commentbegin=\empty
+  \let\commentend=\empty}
+
+\visiblecomments
+
+\newlength{\blanklineskip}
+\setlength{\blanklineskip}{1mm}
+
+\newcommand{\hsindent}[1]{\quad}% default is fixed indentation
+\let\hspre\empty
+\let\hspost\empty
+\newcommand{\NB}{\textbf{NB}}
+\newcommand{\Todo}[1]{$\langle$\textbf{To do:}~#1$\rangle$}
+
+\EndFmtInput
+\makeatother
+%
+
+
+\newcommand{\hint}[2]
+  {#1  \mbox{$\{$~{#2}~$\}$}}
+
+\newcommand{\wrapunwrap}[3]
+{$$\xymatrix@C=18pt@R=0pt{
+        *[r]{\raisebox{-6pt}{#1\ ::\hspace*{-3pt}}}
+      & *+[F-:]{#2} 
+                \ar@/^2pc/[rr]^-{\ensuremath{\Varid{unwrap}}}
+      & *[r]{\ensuremath{\Varid{work}}\ ::\ }
+      & *+[F-:]{#3}="work"
+                \ar@/^2pc/[ll]^-{\ensuremath{\Varid{wrap}}} 
+}$$}
+
+\newcommand{\wrapunwrapone}[3]
+{$$\xymatrix@C=18pt@R=0pt{
+        *[r]{\raisebox{-6pt}{#1\ ::\hspace*{-3pt}}}
+      & *+[F-:]{#2} 
+                \ar@`{(50,-30),(50,30)}_{Recursion}
+      & *+[]{~}
+      & *+[]{~}
+}$$}
+
+\newcommand{\wrapunwraptwo}[3]
+{$$\xymatrix@C=18pt@R=0pt{
+        *[r]{\raisebox{-6pt}{#1\ ::\hspace*{-3pt}}}
+      & *+[F-:]{#2} 
+                \ar@/^2pc/[rr]^-{\ensuremath{\Varid{unwrap}}}
+                \ar@`{(30,-20),(30,20)}
+      & *[r]{\ensuremath{\Varid{work}}\ ::\ }
+      & *+[F-:]{#3}="work"
+                \ar@/^2pc/[ll]^-{\ensuremath{\Varid{wrap}}} 
+}$$}
+
+\newcommand{\wrapunwrapthree}[3]
+{$$\xymatrix@C=18pt@R=0pt{
+        *[r]{\raisebox{-6pt}{#1\ ::\hspace*{-3pt}}}
+      & *+[F-:]{#2} 
+      & *[r]{\ensuremath{\Varid{work}}\ ::\ }
+      & *+[F-:]{#3}="work"
+                \ar@/^2pc/[ll]^-{\ensuremath{\Varid{wrap}}} 
+                \ar@`{(85,-20),(85,20)}_{Recursion}
+}$$}
+
+
+\title{The Worker/Wrapper Transformation}
+\author{Andy Gill\inst{1} \and Graham Hutton\inst{2}}
+\institute{\inst{1}The University of Kansas \and \inst{2}The University of Nottingham}
+
+\date{April 26th, 2012}
+
+%\tinycolouredline{structure!25}% 
+%{\color{white}\textbf{\insertshortauthor\hfill% 
+%\insertshortinstitute}}% 
+%\tinycolouredline{structure}% 
+%{\color{white}\textbf{\insertshorttitle}\hfill}% 
+%}}
+
+%\logo{\includegraphics[width=1cm]{KUlogo1C}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{The Worker/Wrapper Transformation}
+
+
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{}
+\begin{center}
+The Worker/Wrapper Transformation is a rewrite technique\\
+which changes the type of a (recursive) computation
+\end{center}
+\end{block}
+\end{column}
+\end{columns}
+
+
+\vskip 0.1in
+
+\begin{itemize}
+\item Worker/wrapper has been used inside the Glasgow Haskell compiler since its inception to 
+rewriting functions that use lifted values (thunks) into equivalent and more efficient functions that use unplifted values.
+%\item No direct proof of correctness; syntactical arguments given
+\item This talk will explain \alert{why} worker/wrapper works!
+\item Much, much more general that just exploiting strictness analysis.
+\item Worker/wrapper is about changing types
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{Changing the type of a computation \ldots}
+\begin{itemize} 
+\item is pervasive in functional programming
+\item useful in practice
+\item the essence of turning a specification into a implementation
+\end{itemize} 
+\end{block}
+\end{column}
+\end{columns}
+\vskip 0.2in
+Thesis:
+
+\begin{itemize} 
+\item The worker/wrapper transformation is great technique for changing types
+\end{itemize}
+\vskip 0.2in
+
+This talk
+\begin{itemize}
+\item Examples of \alert{what} Worker/Wrapper can do
+% in longer talk
+%\item Show how to use the worker/wrapper transformation
+\item Formalize the Worker/Wrapper Transformation (\alert{why} it works)
+\item Give a recipe for its use
+\item Show \alert{how} to apply our worker/wrapper recipe to some examples
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example 1: Strictness Exploitation}
+
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{Before}
+{\footnotesize\begin{semiverbatim}
+\alert{fac :: Int -> Int -> Int}
+fac n m = if n == 1 
+          then m 
+          else fac (n - 1) (m * n) 
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\vskip 0.2in
+\begin{itemize}
+\item \ensuremath{\Varid{n}} is trivially strict, \ensuremath{\Varid{m}} is provably strict
+\item Can use \ensuremath{\Conid{Int}\mathbin{\#}}, a strict version of Int that is passed by value for \ensuremath{\Varid{n}} and \ensuremath{\Varid{m}}
+\end{itemize}
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{After}
+{\footnotesize\begin{semiverbatim}
+fac n m = box (work (unbox n) (unbox m))
+
+\alert{work :: Int# -> Int# -> Int#}
+work n# m# = if n# ==# 1# 
+            then m# 
+            else work (n# -# 1#) (m# *# n#) 
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example 2: Avoiding Needless Deconstruction}
+
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{Before}
+{\footnotesize\begin{semiverbatim}
+\alert{last       :: [a] -> a}
+last []       = error "last: []"
+last (x:[])   = x
+last (x:xs)   = last xs
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\vskip 0.2in
+\begin{itemize}
+\item The recursive call of \ensuremath{\Varid{last}} never happens with an empty list
+\item Subsequent recursive invocations performs a needless check for an empty list 
+\end{itemize}
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{After}
+{\footnotesize\begin{semiverbatim}
+last []     = error "last: []"
+last (x:xs) = work x xs
+
+\alert{work :: a -> [a] -> a}
+work x []     = x
+work x (y:ys) = work y ys
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example 3: Efficient \ensuremath{\Varid{nub}}}
+
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{Before}
+{\footnotesize\begin{semiverbatim}
+\alert{nub :: [Int] -> [Int]}
+nub [] = []
+nub (x:xs) = x : nub (filter (\\y -> not (x == y)) xs)
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\vskip 0.2in
+{\footnotesize\begin{itemize}
+\item \ensuremath{\Varid{filter}} is applied to the tail of the argument list on each recursive call, to avoid duplication
+\item It would be more efficient to remember the elements that have already been issued
+\end{itemize}}
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{After}
+{\footnotesize\begin{semiverbatim}
+nub :: [Int] -> [Int]
+nub xs = work xs empty
+ 
+\alert{work :: [Int] -> Set Int -> [Int]}
+work xs except = 
+  case dropWhile (\\ x -> x `member` except) xs of
+    [] -> []
+    (x:xs) -> x : work xs (insert x except)
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Example 4: Memoization}
+
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{Before}
+{\footnotesize\begin{semiverbatim}
+\alert{fib :: Nat -> Nat}
+fib n = if n < 2 then 1 else fib (n-1) + fib (n-2)
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\vskip 0.2in
+\begin{itemize}
+\item Memoization is a well-known optimization for \ensuremath{\Varid{fib}}
+\item Memoization is just a change in representation over the recursive call
+\end{itemize}
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{After}
+{\footnotesize\begin{semiverbatim}
+fib :: Nat -> Nat
+fib n = work !! n
+
+\alert{work :: [Nat]}
+work = map f [0..]
+  where f = if n < 2 then 1 else work !! (n-1) + work !! (n-2)
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Example 5: Double-barrel CPS Translation}
+
+\begin{columns}[t] 
+\begin{column}{0.95\textwidth}
+\begin{block}{Before}
+{\scriptsize\begin{semiverbatim}
+\alert{eval :: Expr -> Maybe Int}
+eval (Val n)     =  Just n
+eval (Add x y)   =  case eval x of Nothing -> Nothing
+                                   Just n  -> case eval y of Nothing -> Nothing
+                                                             Just m  -> Just (n+m)
+eval (Throw)     =  Nothing
+eval (Catch x y) =  case eval x of Nothing -> eval y
+                                   Just n  -> Just n
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+\vskip 0.1in
+\begin{itemize}
+\item CPS changes the result type from \ensuremath{\Conid{A}} to \ensuremath{(\Conid{A}\to \Conid{X})\to \Conid{X}}
+\item Again, just a change in representation
+\end{itemize}
+\begin{columns}[t] 
+\begin{column}{0.95\textwidth}
+\begin{block}{After}
+
+{\scriptsize\begin{semiverbatim}
+eval e = work e Just Nothing
+
+\alert{work :: Expr -> (Int -> Maybe Int) -> Maybe Int -> Maybe Int}
+work (Val n)     s f  =  s n
+work (Add x y)   s f  =  work x (\\n -> work y (\\m -> s (n+m)) f) f
+work (Throw)     s f  =  f
+work (Catch x y) s f  =  work x s (work y s f)
+\end{semiverbatim}}
+\end{block}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}
+\begin{columns}[t] 
+\begin{column}{0.8\textwidth}
+\begin{block}{Changing the {\em representation\/} of a computation \ldots}
+\begin{itemize} 
+\item is pervasive in functional programming
+\item useful in practice
+\item the essence of turning a specification into a implementation
+\item what worker/wrapper does
+\end{itemize} 
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile] 
+\frametitle{Creating Workers and Wrappers for last}
+
+\begin{semiverbatim}
+last :: [a] -> a
+\alert<4>{last} = \uncover<3->{\alert<3>{\\ v -> case v of
+                []     -> error "last: []"
+                (x:xs) -> \alert<4>{last_work} x xs}}
+
+\uncover<2->{\alert<2>{last_work :: a -> [a] -> a
+\alert<4>{last_work} = \\ x xs -> 
+        (}}\\ v -> case v of
+                  []     -> error "last: []"
+                  (x:xs) -> case xs of
+                             []    -> x
+                             (_:_) -> \alert<4>{last} xs\uncover<2->{\alert<2>{) (x:xs)}}
+
+
+
+\end{semiverbatim}
+\begin{itemize}
+\item <2- |alert@2>Create the worker out of the body and an invented coercion to the target type
+\item <3- |alert@3>Invent the wrapper which call the worker
+\item <4- |alert@4>These functions are mutually recursive
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile] 
+\frametitle{Inline Wrapper}
+\begin{semiverbatim}
+last :: [a] -> a
+last = \\ v -> case v of
+                []     -> error "last: []"
+                (x:xs) -> last_work x xs
+
+last_work :: a -> [a] -> a
+last_work = \\ x xs -> \only<1>{
+        (\\ v -> case v of
+                  []     -> error "last: []"
+                  (x:xs) -> case xs of
+                             []    -> x
+                             (_:_) -> \alert{last} xs) (x:xs)
+
+
+
+}\only<2>{
+        (\\ v -> case v of
+                  []     -> error "last: []"
+                  (x:xs) -> case xs of
+                             []    -> x
+                             (_:_) -> 
+               \alert{(\\ v -> case v of
+                         []     -> error "last: []"
+                         (x:xs) -> last_work x xs)} xs) (x:xs)
+}\end{semiverbatim}
+\begin{itemize}
+\item<1- |alert@1>We now inline \ensuremath{\Varid{last}} inside \ensuremath{\Varid{last\char95 work}}
+\item<2- |alert@2>\ensuremath{\Varid{last\char95 work}} is now trivially recursive.
+\item<0>XXX
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile] 
+\frametitle{Simplify \ensuremath{\Varid{work}}}
+\begin{semiverbatim}
+last :: [a] -> a
+last = \\ v -> case v of
+                []     -> error "last: []"
+                (x:xs) -> last_work x xs
+
+last_work :: a -> [a] -> a
+\only<1>{\alert{last_work = \\ x xs -> 
+       (\\ v -> case v of
+                  []     -> error "last: []"
+                  (x:xs) -> case xs of
+                             []    -> x
+                             (_:_) -> 
+               (\\ v -> case v of
+                         []     -> error "last: []"
+                         (x:xs) -> last_work x xs) xs) (x:xs)
+}}\only<2>{\alert{last_work = \\ x xs -> 
+                \only<1>{\alert<1>{case (x:xs) of}
+                  []     -> error "last: []"
+                  \alert<1>{(x:xs)} -> }\only<2->{
+
+                           }case xs of
+                             []    -> x
+                             (x:xs) -> last_work x xs
+
+
+
+}}\end{semiverbatim}
+\begin{itemize}
+\item<1- |alert@1>We now simplify the worker
+\item<2- |alert@2>Reaching our efficient implementation
+\item<0>XXX
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The Informal Worker Wrapper Methodology}
+
+\begin{itemize}
+\item From a recursive function, construct two new functions
+\end{itemize}
+{\small\begin{columns}[t] 
+\begin{column}{0.4\textwidth}
+\begin{block}{Wrapper}
+\begin{itemize} 
+\item Replacing the original function
+\item Coerces call to Worker
+\end{itemize} 
+\end{block}
+\end{column} 
+\begin{column}{0.4\textwidth}
+\begin{block}{Worker}
+\begin{itemize}
+\item Performs main computation
+\item Syntactically contains the body of the original function
+\item Coerces call from Wrapper
+\end{itemize} 
+\end{block}
+\end{column} 
+\end{columns}}
+
+\begin{itemize}
+\item The initial worker and wrapper are mutually recursive
+\item We then inline the wrapper inside the worker, and simplify
+\item We end up with 
+\begin{itemize}
+\item An efficient recursive worker
+\item An impedance matching non-recursive wrapper
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Questions about the Worker/Wrapper Transformation}
+\begin{itemize}
+\item Is the technique actually correct? 
+\item How can this be proved? 
+\item Under what conditions does it hold? 
+\item How should it be used in practice? 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{\ensuremath{\Varid{wrap}} and \ensuremath{\Varid{unwrap}}}
+
+\wrapunwrap{last}{\ensuremath{[\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}}{\ensuremath{\Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{\ensuremath{\Varid{wrap}} and \ensuremath{\Varid{unwrap}} in General}
+
+\wrapunwrap{comp}{\ensuremath{\Conid{A}}}{\ensuremath{\Conid{B}}}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{Prerequisites}
+\ensuremath{\Varid{comp}\mathbin{::}\Conid{A}}
+
+\ensuremath{\Varid{comp}\mathrel{=}\Varid{fix}\;\Varid{body}} for some \ensuremath{\Varid{body}\mathbin{::}\Conid{A}\to \Conid{A}}
+
+\vskip 0.1in
+
+\ensuremath{\Varid{wrap}\mathbin{::}\Conid{B}\to \Conid{A}} is a coercion from type \ensuremath{\Conid{B}} to \ensuremath{\Conid{A}}
+
+\ensuremath{\Varid{unwrap}\mathbin{::}\Conid{A}\to \Conid{B}} is a coercion from type \ensuremath{\Conid{A}} to \ensuremath{\Conid{B}}
+
+\vskip 0.1in
+
+\ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}} = $\ensuremath{\Varid{id}}_\ensuremath{\Conid{A}}$\hskip 1in{\em (basic worker/wrapper assumption)}
+\end{block}
+
+\only<1-5>{\begin{block}{Derivation}
+\alert<1>{\ensuremath{\Varid{comp}\mathrel{=}\Varid{fix}\;\Varid{body}}}\\
+\only<2->{\hint{$=$}{\ensuremath{\Varid{id}} is the identity for \ensuremath{\mathbin{\circ}}}\\
+\alert<2>{\ensuremath{\Varid{comp}\mathrel{=}\Varid{fix}\;(\Varid{id}\mathbin{\circ}\Varid{body})}}\\}
+\only<3->{\hint{$=$}{assuming \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathrel{=}\Varid{id}}}\\
+\alert<3>{\ensuremath{\Varid{comp}\mathrel{=}\Varid{fix}\;(\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathbin{\circ}\Varid{body})}}\\}
+\only<4->{\hint{$=$}{rolling rule}\\
+\alert<4>{\ensuremath{\Varid{comp}\mathrel{=}\Varid{wrap}\;(\Varid{fix}\;(\Varid{unwrap}\mathbin{\circ}\Varid{body}\mathbin{\circ}\Varid{wrap}))}}\\}
+\only<5->{\hint{$=$}{define \ensuremath{\Varid{work}\mathrel{=}\Varid{fix}\;(\Varid{unwrap}\mathbin{\circ}\Varid{body}\mathbin{\circ}\Varid{wrap})}}\\
+\alert<5>{\ensuremath{\Varid{comp}\mathrel{=}\Varid{wrap}\;\Varid{work}}\\
+\ensuremath{\Varid{work}\mathrel{=}\Varid{fix}\;(\Varid{unwrap}\mathbin{\circ}\Varid{body}\mathbin{\circ}\Varid{wrap})}}\\}
+\end{block}
+}
+
+\only<6>{\begin{block}{Worker/Wrapper Theorem}
+If the above prerequisites hold, then
+\[
+\begin{parray}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[7]{}\Varid{comp}\mathrel{=}\Varid{fix}\;\Varid{body}{}\<[E]%
+\ColumnHook
+\end{parray}
+\]\resethooks
+can be rewritten as 
+\[
+\begin{parray}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[7]{}\Varid{comp}\mathrel{=}{}\<[15]%
+\>[15]{}\Varid{wrap}\;\Varid{work}{}\<[E]%
+\ColumnHook
+\end{parray}
+\]\resethooks
+where \ensuremath{\Varid{work}\mathbin{::}\Conid{B}} is defined by
+\[
+\begin{parray}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[7]{}\Varid{work}\mathrel{=}{}\<[15]%
+\>[15]{}\Varid{fix}\;(\Varid{unwrap}\mathbin{\circ}\Varid{body}\mathbin{\circ}\Varid{wrap}){}\<[E]%
+\ColumnHook
+\end{parray}
+\]\resethooks
+\end{block}}
+\vskip 5in% to push things up
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The worker/wrapper assumptions}
+\begin{columns}[t] 
+\begin{column}{0.1\textwidth}
+\end{column}
+\begin{column}{0.6\textwidth}
+\begin{block}{Key step of proof}
+\[
+\begin{parray}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{fix}\;(\Varid{id}\mathbin{\circ}\Varid{body}){}\<[E]%
+\ColumnHook
+\end{parray}
+\]\resethooks
+\hint{$=$}{assuming \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathrel{=}\Varid{id}}}
+\[
+\begin{parray}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{fix}\;(\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathbin{\circ}\Varid{body}){}\<[E]%
+\ColumnHook
+\end{parray}
+\]\resethooks
+\end{block}
+\end{column}
+\begin{column}{0.3\textwidth}
+\end{column}
+
+\end{columns}
+
+\vskip 0.2in
+
+We can actually use any of three different assumptions here
+
+{\small
+$$\begin{tabular}{rclr}
+  \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}} &= &\ensuremath{\Varid{id}} &(basic assumption)\\[5pt]
+     &$\Downarrow$ \\[5pt]
+  \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathbin{\circ}\Varid{body}} &= &\ensuremath{\Varid{body}} &(body assumption)\\[5pt]
+     &$\Downarrow$ \\[5pt]
+  \ensuremath{\Varid{fix}\;(\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathbin{\circ}\Varid{body})} &= &\ensuremath{\Varid{fix}\;\Varid{body}} &(fix-point assumption)\\
+  \end{tabular}
+$$}
+\end{frame}
+
+
+\begin{frame}[fragile] 
+\frametitle{The Worker/Wrapper Recipe}
+
+\begin{block}{Recipe}
+\begin{itemize}
+\item Express the computation as a least fixed point;
+\item Choose the desired new type for the computation;
+\item Define conversions between the original and new types;
+\item Check they satisfy one of the worker/wrapper assumptions;
+\item Apply the worker/wrapper transformation;
+\item Simplify the resulting definitions.
+\end{itemize}
+\end{block}
+
+We simplify to remove the overhead of the \ensuremath{\Varid{wrap}} and \ensuremath{\Varid{unwrap}} coercions,
+often using fusion, including the worker/wrapper fusion property.
+
+\begin{block}{The Worker/Wrapper Fusion Property}
+\begin{center}
+If \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathrel{=}\Varid{id}}, then \ensuremath{(\Varid{unwrap}\mathbin{\circ}\Varid{wrap})\;\Varid{work}\mathrel{=}\Varid{work}}
+\end{center}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\frametitle{Creating Workers and Wrappers for last}
+
+\wrapunwrap{last}{\ensuremath{[\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}}{\ensuremath{\Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}}
+
+\begin{semiverbatim}
+wrap fn = \\ xs -> case xs of
+                    [] -> error "last: []"
+                    (x:xs) -> fn x xs
+
+unwrap fn = \\ x xs -> fn (x:xs)
+
+last = fix body
+
+body last = \\ v -> case v of
+                     []     -> error "last: []"
+                     (x:[]) -> x
+                     (x:xs) -> last xs
+\end{semiverbatim}
+\end{frame}
+
+\begin{frame}[fragile] 
+\frametitle{Testing the basic worker/wrapper assumption:\\Does \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathrel{=}\Varid{id}}?}
+\begin{semiverbatim}
+wrap . unwrap 
+\end{semiverbatim}
+\hint{$=$}{apply \ensuremath{\Varid{wrap}}, \ensuremath{\Varid{unwrap}} and \ensuremath{\mathbin{\circ}}}
+\begin{semiverbatim}
+\\ fn ->
+  (\\ xs -> case xs of
+              [] -> error "last: []"
+              (x:xs) -> (\\ x xs -> fn (x:xs)) x xs)
+\end{semiverbatim}
+\hint{$=$}{$\beta$-reduction}
+\begin{semiverbatim}
+\\ fn ->
+  (\\ xs -> case xs of
+              [] -> error "last: []"
+              (x:xs) -> fn (x:xs))
+\end{semiverbatim}
+
+Clearly not equal to \ensuremath{\Varid{id}\mathbin{::}([\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a})\to ([\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a})}
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\frametitle{Testing the body worker/wrapper assumption:\\Does \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathbin{\circ}\Varid{body}\mathrel{=}\Varid{body}}?}
+\begin{semiverbatim}
+wrap . unwrap . body
+\end{semiverbatim}
+\hint{$=$}{apply \ensuremath{\Varid{wrap}}, \ensuremath{\Varid{unwrap}} and \ensuremath{\mathbin{\circ}}}
+\only<2->{\\\hint{$=$}{$\beta$-reductions}}%
+\only<3->{\\\hint{$=$}{case of known constructors}}%
+\only<4->{\\\hint{$=$}{common up case}}%
+\begin{semiverbatim}
+\only<1>{(\\ fn ->
+  (\\ xs -> case xs of
+              [] -> error "last: []"
+              (x:xs) -> (\\ x xs -> fn (x:xs)) x xs)) 
+   (\\ last v -> case v of
+                     []     -> error "last: []"
+                     (x:[]) -> x
+                     (x:xs) -> last xs)
+}\only<2>{(\\ fn ->
+  (\\ xs -> case xs of
+              [] -> error "last: []"
+              (x:xs) -> case (x:xs) of
+                     []     -> error "last: []"
+                     (x:[]) -> x
+                     (x:xs) -> fn xs))
+}\only<3>{(\\ fn ->
+  (\\ xs -> case xs of
+              [] -> error "last: []"
+              (x:xs) -> case xs of
+                          [] -> x
+                          xs -> fn xs))
+}\only<4>{(\\ fn ->
+  (\\ xs -> case xs of
+              [] -> error "last: []"
+              (x:[]) -> x
+              (x:xs) -> fn xs))
+}\end{semiverbatim}
+
+\only<4->{Which equals \ensuremath{\Varid{body}}. QED.}
+\end{frame}
+
+\begin{frame}[fragile] 
+\frametitle{Applying the Worker/Wrapper Transformation}
+\begin{columns}[t] 
+\begin{column}{0.3\textwidth}
+\begin{block}{Before}\[
+\begin{parray}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{last}\mathrel{=}\Varid{fix}\;\Varid{body}{}\<[E]%
+\ColumnHook
+\end{parray}
+\]\resethooks
+\end{block}
+\end{column}
+\begin{column}{0.7\textwidth}
+\wrapunwrap{last}{\ensuremath{[\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}}{\ensuremath{\Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}}
+\end{column}
+\end{columns}
+
+\begin{semiverbatim}
+last  :: [a] -> a
+last = wrap work
+
+work :: a -> [a] -> a
+work = fix ( unwrap 
+           . body 
+           . wrap
+           )
+\end{semiverbatim}
+\end{frame}
+
+
+\begin{frame}[fragile] 
+\frametitle{Inline and Simplify}
+\begin{semiverbatim}
+last  :: [a] -> a
+last xs = case xs of
+           [] -> error "last: []"
+           (x:xs) -> work x xs
+
+work :: a -> [a] -> a
+\only<1>{work = fix ( (\\ fn x xs -> fn (x:xs))
+           . (\\ last v -> case v of
+                     []     -> error "last: []"
+                     (x:[]) -> x
+                     (x:xs) -> last xs)
+           . (\\ fn xs -> case xs of
+                    [] -> error "last: []"
+                    (x:xs) -> fn x xs)
+           )
+}\only<2>{work = fix ( \\ fn x xs ->
+                  case (x:xs) of
+                    []     -> error "last: []"
+                    (x:[]) -> x
+                    (x:xs) -> case xs of
+                                [] -> error "last: []"
+                                (x:xs) -> fn x xs
+           )
+}\only<3>{work = fix ( \\ fn x xs ->
+                  case xs of
+                    [] -> x
+                    xs -> case xs of
+                           [] -> error "last: []"
+                           (x:xs) -> fn x xs
+           )
+}\only<4>{work = fix ( \\ fn x xs ->
+                  case xs of
+                    [] -> x
+                    (x:xs) -> fn x xs
+           )
+}\only<5>{work x xs = case xs of
+             []     -> x
+             (x:xs) -> work x xs
+}\end{semiverbatim}
+\end{frame}
+
+
+\begin{frame}[fragile] 
+\frametitle{When does the Worker/Wrapper Transformation succeed?}
+
+When \ensuremath{\Varid{unwrap}\mathbin{\circ}\Varid{wrap}} fuse! 
+
+\wrapunwrap{comp}{\ensuremath{\Conid{A}}}{\ensuremath{\Conid{B}}}
+
+Emerging heuristic
+
+\begin{columns}[t] 
+\begin{column}{0.42\textwidth}
+\begin{block}{Worker/Wrapper Fusion}
+\begin{center}
+Pre-condition: \ensuremath{\Varid{wrap}\mathbin{\circ}\Varid{unwrap}\mathrel{=}\Varid{id}}$_{\ensuremath{\Conid{A}}}$\\
+~\\[5pt]
+When B is ``larger'' than A
+\end{center}
+\end{block}
+\end{column}
+
+\begin{column}{0.04\textwidth}
+\end{column}
+
+\begin{column}{0.42\textwidth}
+\begin{block}{Evaluation}
+\begin{center}
+Pre-condition: \ensuremath{\Varid{unwrap}\mathbin{\circ}\Varid{wrap}\mathrel{=}\Varid{id}}$_{\ensuremath{\Conid{B}}}$\\
+~\\[5pt]
+When A is ``larger'' than B
+\end{center}
+\end{block}
+\end{column}
+\end{columns}
+
+{~}\\[5pt]
+More powerful fusion methods can also be used
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Conclusions}
+
+\begin{itemize}
+\item Worker/wrapper is a general and systematic approach to transforming
+a computation of one type into an equivalent computation of another type
+
+\item It is straightforward to understand and apply, requiring
+only basic equational reasoning techniques, and often avoiding
+the need for induction
+
+\item It allows many seemingly unrelated optimization
+techniques to be captured inside a single unified framework
+\end{itemize}
+
+\end{frame}
+
+%\begin{frame}
+%\frametitle{Further Work}
+%
+%\begin{itemize}
+%\item Monadic and Effectful Constructions
+%\item Mechanization
+%\item Implement inside the Haskell Equational Reasoning Assistant
+%\item Consider other patterns of recursion
+%\end{itemize}
+%
+%\end{frame}
+
+\end{document}
