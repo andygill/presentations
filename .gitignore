@@ -7,3 +7,5 @@ talk.pdf
 *.snm
 *.toc
 *.vrb
+*/*.pdf
+*.ptb

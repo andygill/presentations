@@ -85,7 +85,7 @@ currentTime = do
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{First Sunroof Example: red line}
+\frametitle{First Blank Canvas Example: red line}
 \Large
 
 
@@ -647,11 +647,51 @@ See: The Constrained-Monad Problem, ICFP'13, Sculthorpe, et. al.\ for details.
 
 \end{frame}
 
+\begin{frame}[fragile]{Sunroof Example}
+        
+        
+\begin{codeblock}[0.8]
+\begin{verbatim}
+GHCi> import Language.Sunroof
+GHCi> import Language.Sunroof.JS.Browser
+GHCi> import Data.Default
+GHCi> txt <- sunroofCompileJSA def "main" $ do 
+                 alert(js "Hello");
+GHCi> putStrLn txt
+ var main = (function() {
+   alert("Hello");
+ })();
+\end{verbatim}
+\end{codeblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Sunroof Function Example}
+
+\begin{codeblock}[0.8]
+\begin{verbatim}
+GHCi> txt <- sunroofCompileJSA def "main" $ do
+            function $ \ n -> do
+                return (n * (n :: JSNumber))
+GHCi> putStrLn txt
+var main = (function() {
+   var v1 = function(v0) {
+     return v0*v0;
+   };
+   return v1;
+})();
+\end{verbatim}
+\end{codeblock}
+
+\end{frame}
+
+
+
 \begin{frame}[fragile]{Threading Models}
 
 Actually the `JS` data type has another type parameter `t`:
 
-\begin{codeblock}[0.15]
+\begin{codeblock}[0.2]
 \small
 \begin{verbatim}
 JS t a
@@ -663,18 +703,19 @@ JS t a
 \item `t` can either be \verb`A` or \verb`B`
 \end{itemize}
 
-\begin{columns}
-\begin{column}{0.5\textwidth}
-Model A: Atomic
+\end{frame}
+
+\begin{frame}[fragile]{Model A: Atomic}
+
 \begin{itemize}
 \item The JavaScript threading model
 \item Callback centric
 \item One thread with event loop
 \item Executed code in loop is uninterruptible
 \end{itemize}
-\end{column}
-\begin{column}{0.5\textwidth}
-Model B: Blocking
+\end{frame}
+
+\begin{frame}[fragile]{Model B: Blocking}
 
 \begin{itemize}
 \item Adds cooperative concurrency to Sunroof
@@ -694,9 +735,6 @@ Also \verb|JSMVar| and \verb|JSChan|.
 \begin{itemize}
 \item Implemented through translation of continuations to JavaScript
 \end{itemize}
-
-\end{column}
-\end{columns}
 
 \end{frame}
 
@@ -747,6 +785,7 @@ goto           :: (...) => JSContinuation a
 \end{verbatim}
 \end{codeblock}
 
+~\\
 We even have our friend, call/cc.
 
 \begin{codeblock}[0.9]
@@ -758,14 +797,62 @@ callcc :: (...) => (JSContinuation a -> JS B a)
 
 \end{frame}
 
+\begin{frame}[fragile]{Calling JavaScript: Methods}
+        
+JavaScript:
+
+\begin{codeblock}[0.6]
+\begin{verbatim}
+document.getElementById("n")
+\end{verbatim}
+\end{codeblock}
+
+becomes:
+
+\begin{codeblock}[0.8]
+\begin{verbatim}
+object "document" # invoke "getElementById" "n"
+\end{verbatim}
+\end{codeblock}
+
+~\\
+Types:
+
+\begin{codeblock}[0.8]
+\begin{verbatim}
+object :: String -> JSObject
+invoke :: (...) => String -> a -> o -> JS t r
+(#)    :: o -> (o -> JS t r) -> JS t r
+\end{verbatim}
+\end{codeblock}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Clock}
+        
+\includegraphics[width=200pt]{example-sunroof-clock.png}
+
+\end{frame}        
+
+
 
 \begin{frame}[fragile]{So how well does it all work?}
+
+We wrote a number of demos and two applications (calculator; grader program),
+to find out how Sunroof works in practice.
         
 \begin{itemize}
-\item The types are quite complex
-\item Wrote a number of applications (calculator; grader program)
-\item Control flow is the {\bf pain point}
+\item You {\em can\/} write JavaScript in Haskell
+\item But the types are quite complex/involved
+\item Lots of type annotations, for example (\verb|x :: JSNumber|)
+\item You are interacting with handles, not real datatypes 
+\item Template Haskell helps, but does not solve the handle problem
+\item Control flow {\em the\/} major pain point
 \end{itemize}                
+
+My assessment: without Haskell control flow (pattern matching, if/then/else),
+such programs will always feel foreign and forced.
 
 \end{frame}
 
