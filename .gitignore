@@ -9,3 +9,5 @@ talk.pdf
 *.vrb
 */*.pdf
 *.ptb
+# for now
+JavaScriptDSLs
